@@ -5,6 +5,8 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ClerkProvider } from '@clerk/nextjs'
+import { ThemeProvider } from "~/components/theme-provider";
+import { ThemeToggle } from "~/components/theme-toggle";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -17,9 +19,21 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable}`}>
+      <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
         <body>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <ThemeProvider
+            attribute={"class"}
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TRPCReactProvider>
+              <div className="absolute bottom-4 right-4">
+                <ThemeToggle />
+              </div>
+              {children}
+            </TRPCReactProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
