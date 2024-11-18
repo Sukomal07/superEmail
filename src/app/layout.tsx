@@ -31,6 +31,7 @@ export default function RootLayout({
               <div className="absolute bottom-4 right-4">
                 <ThemeToggle />
               </div>
+
               {children}
             </TRPCReactProvider>
           </ThemeProvider>

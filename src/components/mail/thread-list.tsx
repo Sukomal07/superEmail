@@ -42,7 +42,7 @@ export default function ThreadList() {
                                     <div className='flex items-center py-1'>
                                         <div className='flex items-center gap-2'>
                                             <h1 className='font-semibold'>
-                                                {thread.emails.at(-1)?.from.name ?? "Unknown"}
+                                                {thread.emails.at(-1)?.from.name ?? thread.emails.at(-1)?.from.address}
                                             </h1>
                                         </div>
                                         <span className={cn("ml-auto text-xs")}>

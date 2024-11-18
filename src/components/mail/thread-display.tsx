@@ -5,7 +5,8 @@ import { Archive, ArchiveX, Clock, Forward, Mail, MessageSquareOff, MoreVertical
 import { Separator } from '../ui/separator'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { Avatar } from '../ui/avatar'
+import { format } from 'date-fns'
+import DisplayEmail from './display-email'
 
 export default function ThreadDisplay() {
     const { threadId, threads } = useThreads()
@@ -124,23 +125,43 @@ export default function ThreadDisplay() {
                 </div>
             </div>
             <Separator />
-            {
-                thread ? (
-                    <div className='flex flex-col flex-1 overflow-scroll'>
-                        <div className='flex items-center p-4'>
-                            <div className='flex items-center text-sm gap-4'>
-                                <Avatar>
+            <div className='flex flex-col flex-1 overflow-hidden'>
+                <div className='flex items-center p-4'>
 
-                                </Avatar>
-                            </div>
-
+                    <div className=' flex flex-col gap-1 items-start'>
+                        <h2 className='text-lg text-wrap font-semibold'>
+                            {thread?.emails[0]?.subject}
+                        </h2>
+                        <div className='text-xs text-wrap'>
+                            <span className='font-normal'>
+                                Reply-to : {" "}
+                            </span>
+                            <span className='text-muted-foreground'>
+                                {thread?.emails[0]?.from?.address}
+                            </span>
                         </div>
-
                     </div>
-                ) : (
-                    <span className='p-8 text-center text-muted-foreground'> No message selected </span>
-                )
-            }
+
+                    {thread?.emails[0]?.sentAt && (
+                        <span className='ml-auto text-muted-foreground text-xs'>
+                            {format(new Date(thread.emails[0].sentAt), 'PPpp')}
+                        </span>
+                    )}
+                </div>
+                <Separator />
+                <div className='max-h-[35rem] max-w-full overflow-y-scroll flex flex-col'>
+                    <div className='p-6 flex flex-col gap-4'>
+                        {
+                            thread?.emails?.map((email) => (
+                                <DisplayEmail key={email.id} email={email} />
+                            ))
+                        }
+                    </div>
+                </div>
+                <div className='flex-1'></div>
+                <Separator className='mt-auto' />
+                Reply box
+            </div>
         </div>
     )
 }
