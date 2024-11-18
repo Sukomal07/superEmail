@@ -11,7 +11,7 @@ import DisplayEmail from './display-email'
 export default function ThreadDisplay() {
     const { threadId, threads } = useThreads()
 
-    const thread = threads?.find(th => th.id === threadId)
+    const thread = threads?.find(th => th.id === threadId) ?? threads?.[0]
     return (
         <div className='flex flex-col h-full'>
             <div className='flex items-center px-4 py-2'>
@@ -125,43 +125,48 @@ export default function ThreadDisplay() {
                 </div>
             </div>
             <Separator />
-            <div className='flex flex-col flex-1 overflow-hidden'>
-                <div className='flex items-center p-4'>
+            {thread ? (
+                <div className='flex flex-col flex-1 overflow-hidden'>
+                    <div className='flex items-start p-4 justify-between'>
+                        <div className=' flex flex-col gap-1 max-w-[33rem]'>
+                            <h2 className='text-lg text-wrap font-semibold'>
+                                {thread?.emails[0]?.subject}
+                            </h2>
+                            <div className='text-xs text-wrap'>
+                                <span className='font-normal'>
+                                    {
+                                        thread?.emails[0]?.from?.address && "Reply-to : "
+                                    }
+                                </span>
+                                <span className='text-muted-foreground'>
+                                    {thread?.emails[0]?.from?.address}
+                                </span>
+                            </div>
+                        </div>
 
-                    <div className=' flex flex-col gap-1 items-start'>
-                        <h2 className='text-lg text-wrap font-semibold'>
-                            {thread?.emails[0]?.subject}
-                        </h2>
-                        <div className='text-xs text-wrap'>
-                            <span className='font-normal'>
-                                Reply-to : {" "}
+                        {thread?.emails[0]?.sentAt && (
+                            <span className='ml-auto text-muted-foreground text-xs'>
+                                {format(new Date(thread.emails[0].sentAt), 'PPpp')}
                             </span>
-                            <span className='text-muted-foreground'>
-                                {thread?.emails[0]?.from?.address}
-                            </span>
+                        )}
+                    </div>
+                    <Separator />
+                    <div className='max-h-[35rem] max-w-full overflow-y-scroll flex flex-col'>
+                        <div className='p-6 flex flex-col gap-4'>
+                            {
+                                thread?.emails?.map((email) => (
+                                    <DisplayEmail key={email.id} email={email} />
+                                ))
+                            }
                         </div>
                     </div>
-
-                    {thread?.emails[0]?.sentAt && (
-                        <span className='ml-auto text-muted-foreground text-xs'>
-                            {format(new Date(thread.emails[0].sentAt), 'PPpp')}
-                        </span>
-                    )}
+                    <div className='flex-1'></div>
+                    <Separator className='mt-auto' />
+                    Reply box
                 </div>
-                <Separator />
-                <div className='max-h-[35rem] max-w-full overflow-y-scroll flex flex-col'>
-                    <div className='p-6 flex flex-col gap-4'>
-                        {
-                            thread?.emails?.map((email) => (
-                                <DisplayEmail key={email.id} email={email} />
-                            ))
-                        }
-                    </div>
-                </div>
-                <div className='flex-1'></div>
-                <Separator className='mt-auto' />
-                Reply box
-            </div>
+            ) : (
+                <span className='p-8 text-center text-muted-foreground'> No email selected </span>
+            )}
         </div>
     )
 }

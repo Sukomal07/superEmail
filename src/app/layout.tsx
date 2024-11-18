@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from "~/components/theme-provider";
 import { ThemeToggle } from "~/components/theme-toggle";
+import KBar from "~/components/kbar";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -28,11 +29,12 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <TRPCReactProvider>
-              <div className="absolute bottom-4 right-4">
-                <ThemeToggle />
-              </div>
-
-              {children}
+              <KBar>
+                <div className="absolute bottom-4 right-4">
+                  <ThemeToggle />
+                </div>
+                {children}
+              </KBar>
             </TRPCReactProvider>
           </ThemeProvider>
         </body>

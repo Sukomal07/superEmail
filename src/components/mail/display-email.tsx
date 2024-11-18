@@ -35,7 +35,7 @@ export default function DisplayEmail({ email }: Props) {
                     })}
                 </p>
             </div>
-            <Letter html={email?.body ?? ''} className='bg-white rounded-md text-black flex justify-center items-center' />
+            <Letter html={email?.body ?? ''} className='bg-white rounded-md text-black' />
         </div>
     )
 }

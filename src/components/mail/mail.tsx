@@ -76,7 +76,7 @@ export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, d
                     </Tabs>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={defaultLayout[3]} minSize={30}>
+                <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
                     <ThreadDisplay />
                 </ResizablePanel>
             </ResizablePanelGroup>
