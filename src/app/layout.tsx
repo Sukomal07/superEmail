@@ -30,7 +30,7 @@ export default function RootLayout({
           >
             <TRPCReactProvider>
               <KBar>
-                <div className="absolute bottom-4 right-4">
+                <div className="fixed bottom-4 right-4 z-20">
                   <ThemeToggle />
                 </div>
                 {children}

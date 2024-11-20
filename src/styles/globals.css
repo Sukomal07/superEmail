@@ -73,3 +73,9 @@
     @apply rounded-full bg-gray-300 dark:bg-neutral-500;
   }
 }
+
+.is-active {
+  background-color: #dadada;
+  border-radius: 4px;
+  padding: 0px 2px;
+}

@@ -29,7 +29,7 @@ export default function AccountSwitcher({ isCollapsed }: Props) {
     const selectedAccount = accounts.find(account => account.id === accountId)
 
     return (
-        <Select defaultValue={accountId} onValueChange={setAccountId}>
+        <Select value={accountId} onValueChange={setAccountId}>
             <SelectTrigger
                 className={cn(
                     "flex w-full flex-1 items-center gap-2 [&>span]:line-clamp-1 [&>span]:flex [&>span]:w-full [&>span]:items-center [&>span]:gap-1 [&>span]:truncate [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0",
@@ -39,6 +39,13 @@ export default function AccountSwitcher({ isCollapsed }: Props) {
                 aria-label="Select account"
             >
                 <SelectValue placeholder='Select an account'>
+                    {
+                        !selectedAccount?.emailAddress && (
+                            <span>
+                                Select an account
+                            </span>
+                        )
+                    }
                     <span className={cn({ "hidden": !isCollapsed })}>
                         {selectedAccount?.emailAddress?.[0]}
                     </span>

@@ -7,11 +7,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { format } from 'date-fns'
 import DisplayEmail from './display-email'
+import ReplyBox from './reply-box'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable'
 
 export default function ThreadDisplay() {
     const { threadId, threads } = useThreads()
 
-    const thread = threads?.find(th => th.id === threadId) ?? threads?.[0]
+    const thread = threads?.find(th => th.id === threadId)
     return (
         <div className='flex flex-col h-full'>
             <div className='flex items-center px-4 py-2'>
@@ -92,21 +94,21 @@ export default function ThreadDisplay() {
                     </div>
                     <Separator orientation='vertical' className='mx-2 h-6' />
                     <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Tooltip>
-                                <TooltipTrigger>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
                                     <Button
                                         variant={"ghost"}
                                         size={"icon"}
                                         disabled={!thread}
                                     >
-                                        <MoreVertical className='size-4' />
+                                        <MoreVertical className="size-4" />
                                         <span className="sr-only">More</span>
                                     </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>More</TooltipContent>
-                            </Tooltip>
-                        </DropdownMenuTrigger>
+                                </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>More</TooltipContent>
+                        </Tooltip>
                         <DropdownMenuContent align='end'>
                             <DropdownMenuItem>
                                 <Mail /> Mark as unread
@@ -151,18 +153,21 @@ export default function ThreadDisplay() {
                         )}
                     </div>
                     <Separator />
-                    <div className='max-h-[35rem] max-w-full overflow-y-scroll flex flex-col'>
-                        <div className='p-6 flex flex-col gap-4'>
-                            {
-                                thread?.emails?.map((email) => (
-                                    <DisplayEmail key={email.id} email={email} />
-                                ))
-                            }
-                        </div>
-                    </div>
-                    <div className='flex-1'></div>
-                    <Separator className='mt-auto' />
-                    Reply box
+                    <ResizablePanelGroup direction="vertical">
+                        <ResizablePanel minSize={2} defaultSize={60} className='!overflow-y-scroll !overflow-x-hidden'>
+                            <div className='p-6'>
+                                {
+                                    thread?.emails?.map((email) => (
+                                        <DisplayEmail key={email.id} email={email} />
+                                    ))
+                                }
+                            </div>
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel minSize={10} defaultSize={40}>
+                            <ReplyBox />
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
                 </div>
             ) : (
                 <span className='p-8 text-center text-muted-foreground'> No email selected </span>

@@ -1,3 +1,4 @@
+import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default async function Home() {
@@ -31,6 +32,7 @@ export default async function Home() {
             </div>
           </Link>
         </div>
+        <SignOutButton />
       </div>
     </main>
   );

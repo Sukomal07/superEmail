@@ -67,7 +67,7 @@ export const accountRouter = createTRPCRouter({
         tab: z.string(),
         done: z.boolean()
     })).query(async ({ ctx, input }) => {
-        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        await authoriseAccountAccess(input.accountId, ctx.auth.userId)
 
         const filter: Prisma.ThreadWhereInput = {}
 
@@ -107,5 +107,69 @@ export const accountRouter = createTRPCRouter({
                 lastMessageDate: 'desc'
             }
         })
+    }),
+
+    getSuggestions: privateProcedure.input(z.object({
+        accountId: z.string()
+    })).query(async ({ ctx, input }) => {
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        const emailAddress = await ctx.db.emailAddress.findMany({
+            where: {
+                accountId: account.id
+            },
+            select: {
+                address: true,
+                name: true
+            }
+        })
+        return emailAddress
+    }),
+
+    getReplyDetails: privateProcedure.input(z.object({
+        accountId: z.string(),
+        threadId: z.string()
+    })).query(async ({ ctx, input }) => {
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+
+        const thread = await ctx.db.thread.findFirst({
+            where: {
+                id: input.threadId
+            },
+            include: {
+                emails: {
+                    orderBy: {
+                        sentAt: 'desc'
+                    },
+                    select: {
+                        from: true,
+                        to: true,
+                        cc: true,
+                        bcc: true,
+                        sentAt: true,
+                        subject: true,
+                        internetMessageId: true
+                    }
+                }
+            }
+        })
+
+        if (!thread || thread.emails.length === 0) {
+            throw new Error("Thread not found")
+        }
+
+        const lastExternalMessage = thread.emails.reverse().find(email => email.from.address !== account.emailAddress)
+
+        if (!lastExternalMessage) {
+            throw new Error("No external message found")
+        }
+
+        return {
+            subject: lastExternalMessage.subject,
+            to: [lastExternalMessage.from, ...lastExternalMessage.to.filter(to => to.address !== account.emailAddress)],
+            cc: lastExternalMessage.cc.filter(cc => cc.address !== account.emailAddress),
+            from: { name: account.name, address: account.emailAddress },
+            id: lastExternalMessage.internetMessageId
+
+        }
     })
 })
