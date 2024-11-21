@@ -56,7 +56,6 @@ function Editor({ replyDetails }: { replyDetails: RouterOutputs['account']['getR
             onToChange={setToValues}
             onCcChange={setCcValues}
             to={replyDetails.to.map(to => to.address)}
-            defaultToolbarExpand={false}
             handleSend={handleSend}
             isSending={false}
         />

@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import StarterKit from "@tiptap/starter-kit"
 import { EditorContent, useEditor } from "@tiptap/react"
-import { Text } from "@tiptap/extension-text"
+import Text from "@tiptap/extension-text"
 import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import EditorMenubar from './editor-menubar'
@@ -11,6 +11,11 @@ import { Separator } from '../ui/separator'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import TagInput from './input'
+import AiCompossButton from './ai-composs-button'
+import { generate } from './action'
+import { readStreamableValue } from 'ai/rsc'
+import useThreads from '~/hooks/useThreads'
+import { turndown } from '~/lib/turndown'
 
 interface ReplyEditorProps {
     toValues: { label: string, value: string }[];
@@ -25,25 +30,58 @@ interface ReplyEditorProps {
     onToChange: (values: { label: string, value: string }[]) => void;
     onCcChange: (values: { label: string, value: string }[]) => void;
 
-    defaultToolbarExpand: boolean;
+    defaultToolbarExpand?: boolean;
 }
 
 export default function ReplyEditor({ toValues, ccValues, subject, setSubject, to, handleSend, isSending, onToChange, onCcChange, defaultToolbarExpand }: ReplyEditorProps) {
     const [value, setValue] = useState<string>('')
-    const [expanded, setExpanded] = useState<boolean>(defaultToolbarExpand)
+    const [expanded, setExpanded] = useState<boolean>(defaultToolbarExpand ?? false)
+    const [generatedText, setGeneratedText] = useState('');
+    const { threadId, threads } = useThreads()
+
+    const thread = threads?.find(th => th.id === threadId)
+
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
+    const aiGenerate = async (prompt: string) => {
+        let fullText = '';
+        let context: string | undefined = ''
+
+        for (const email of thread?.emails ?? []) {
+            const content = `
+                    Subject: ${email.subject}
+                    Body: ${turndown.turndown(email.body ?? email.bodySnippet ?? "")}
+                `
+
+            context = content
+        }
+        const { output } = await generate(prompt, context)
+
+        for await (const token of readStreamableValue(output)) {
+            if (token) {
+                fullText += token;
+            }
+        }
+
+        setGeneratedText(fullText)
+    }
+
     const CustomText = Text.extend({
         addKeyboardShortcuts() {
             return {
-                'Meta-j': () => {
-                    console.log('Meta-j')
+                'Mod-Alt-Space': () => {
+                    if (this.editor.getText()) {
+                        aiGenerate(this.editor.getText())
+                    }
                     return true
-                }
+                },
             }
         },
     })
     const editor = useEditor({
         autofocus: false,
         extensions: [StarterKit, CustomText, Underline, Image],
+        immediatelyRender: false,
         editorProps: {
             attributes: {
                 placeholder: "Write your reply here...",
@@ -55,6 +93,16 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
         }
     })
 
+    useEffect(() => {
+        editor?.commands.insertContent(generatedText)
+    }, [generatedText, editor])
+
+    const onGeneretae = (token: string) => {
+        editor?.commands?.insertContent(token)
+        if (scrollRef?.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        }
+    }
 
     if (!editor) return <></>
     return (
@@ -101,18 +149,19 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
                             to {to?.join(',')}
                         </span>
                     </div>
+                    <AiCompossButton isComposing={defaultToolbarExpand} onGenerate={onGeneretae} />
                 </div>
 
             </div>
             <div className='w-full px-4 h-full my-4'>
-                <EditorContent editor={editor} value={value} className='border border-slate-400 rounded-sm p-1 min-h-full max-h-20 overflow-y-scroll text-base ' />
+                <EditorContent ref={scrollRef} editor={editor} value={value} className='border border-slate-400 rounded-sm p-1 min-h-full max-h-20 overflow-y-scroll text-base ' />
             </div>
             <Separator />
             <div className="py-2 px-4 flex items-center justify-around sticky bottom-0 w-full bg-background z-10">
                 <span className="text-sm text-muted-foreground">
                     Tip: Press{" "}
                     <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">
-                        Ctrl + J
+                        Ctrl + Alt + Space
                     </kbd>{" "}
                     for AI autocomplete
                 </span>
