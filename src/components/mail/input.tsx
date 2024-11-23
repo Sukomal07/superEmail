@@ -11,9 +11,10 @@ type Props = {
     label: string
     onChange: (values: { label: string, value: string }[]) => void
     value: { label: string, value: string }[]
+    composeOpen?: boolean
 }
 
-export default function TagInput({ placeholder, label, onChange, value }: Props) {
+export default function TagInput({ placeholder, label, onChange, value, composeOpen }: Props) {
     const [input, setInput] = useState('');
     const { accountId } = useThreads()
     const { data: suggestions } = api.account.getSuggestions.useQuery({
@@ -58,7 +59,11 @@ export default function TagInput({ placeholder, label, onChange, value }: Props)
                 options={inputOption ? options?.concat(inputOption) : options}
                 formatOptionLabel={(option) => (option as any).customLabel || option.label}
                 className='w-full flex-1'
+                menuPlacement={composeOpen ? 'top' : 'auto'}
+                menuPortalTarget={composeOpen ? undefined : document.body}
                 classNames={{
+                    menuPortal: () => 'z-50',
+                    menu: () => 'z-50',
                     control: () => {
                         return '!border-none !outline-none !ring-0 !shadow-none focus:border-none focus:outline-none focus:ring-0 focus:shadow-none dark:bg-transparent'
                     },

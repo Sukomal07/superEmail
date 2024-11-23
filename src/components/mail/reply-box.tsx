@@ -28,7 +28,7 @@ export default function ReplyBox() {
 
 function Editor({ replyDetails }: { replyDetails: RouterOutputs['account']['getReplyDetails'] }) {
 
-    const { accountId, threadId } = useThreads()
+    const { threadId } = useThreads()
     const [subject, setSubject] = useState(replyDetails.subject.startsWith("Re") ? replyDetails.subject : `Re: ${replyDetails.subject}`)
     const [toValues, setToValues] = useState<{ label: string, value: string }[]>(replyDetails.to.map(to => ({ label: to.address ?? to.name, value: to.address })) || [])
     const [ccValues, setCcValues] = useState<{ label: string, value: string }[]>(replyDetails.cc.map(cc => ({ label: cc.address ?? cc.name, value: cc.address })) || [])

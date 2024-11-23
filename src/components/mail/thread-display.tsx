@@ -1,4 +1,5 @@
 import React from 'react'
+import dynamic from 'next/dynamic'
 import useThreads from '~/hooks/useThreads'
 import { Button } from '../ui/button'
 import { Archive, ArchiveX, Clock, Forward, Mail, MessageSquareOff, MoreVertical, Reply, ReplyAll, Star, Tag, Trash } from 'lucide-react'
@@ -9,6 +10,8 @@ import { format } from 'date-fns'
 import DisplayEmail from './display-email'
 import ReplyBox from './reply-box'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable'
+
+const UserButton = dynamic(() => import('@clerk/nextjs').then(mod => mod.UserButton), { ssr: false })
 
 export default function ThreadDisplay() {
     const { threadId, threads } = useThreads()
@@ -124,6 +127,7 @@ export default function ThreadDisplay() {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    <UserButton />
                 </div>
             </div>
             <Separator />

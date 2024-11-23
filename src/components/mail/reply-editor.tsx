@@ -16,6 +16,7 @@ import { generate } from './action'
 import { readStreamableValue } from 'ai/rsc'
 import useThreads from '~/hooks/useThreads'
 import { turndown } from '~/lib/turndown'
+import ComposeButton from './compose-button'
 
 interface ReplyEditorProps {
     toValues: { label: string, value: string }[];
@@ -31,9 +32,10 @@ interface ReplyEditorProps {
     onCcChange: (values: { label: string, value: string }[]) => void;
 
     defaultToolbarExpand?: boolean;
+    composeOpen?: boolean
 }
 
-export default function ReplyEditor({ toValues, ccValues, subject, setSubject, to, handleSend, isSending, onToChange, onCcChange, defaultToolbarExpand }: ReplyEditorProps) {
+export default function ReplyEditor({ toValues, ccValues, subject, setSubject, to, handleSend, isSending, onToChange, onCcChange, defaultToolbarExpand, composeOpen }: ReplyEditorProps) {
     const [value, setValue] = useState<string>('')
     const [expanded, setExpanded] = useState<boolean>(defaultToolbarExpand ?? false)
     const [generatedText, setGeneratedText] = useState('');
@@ -85,7 +87,7 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
         editorProps: {
             attributes: {
                 placeholder: "Write your reply here...",
-                class: 'focus:outline-none'
+                class: 'focus:outline-none flex-1 p-2 overflow-y-scroll'
             }
         },
         onUpdate: ({ editor }) => {
@@ -120,12 +122,14 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
                                     onChange={onToChange}
                                     placeholder='Add Recipients'
                                     value={toValues}
+                                    composeOpen={composeOpen}
                                 />
                                 <TagInput
                                     label='Cc'
                                     onChange={onCcChange}
                                     placeholder='Add Recipients'
                                     value={ccValues}
+                                    composeOpen={composeOpen}
                                 />
                                 <Input
                                     id='subject'
@@ -153,11 +157,11 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
                 </div>
 
             </div>
-            <div className='w-full px-4 h-full my-4'>
-                <EditorContent ref={scrollRef} editor={editor} value={value} className='border border-slate-400 rounded-sm p-1 min-h-full max-h-20 overflow-y-scroll text-base ' />
+            <div className='w-full px-4 h-full my-3'>
+                <EditorContent ref={scrollRef} editor={editor} value={value} className={`border border-slate-400 rounded-sm ${composeOpen ? 'min-h-52' : 'min-h-full'} max-h-20 text-base flex flex-col`} />
             </div>
             <Separator />
-            <div className="py-2 px-4 flex items-center justify-around sticky bottom-0 w-full bg-background z-10">
+            <div className="py-2 px-4 flex items-center justify-between sticky bottom-0 w-full bg-background z-10">
                 <span className="text-sm text-muted-foreground">
                     Tip: Press{" "}
                     <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">
@@ -165,15 +169,22 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
                     </kbd>{" "}
                     for AI autocomplete
                 </span>
-                <Button variant={"outline"}
-                    onClick={async () => {
-                        editor?.commands?.clearContent()
-                        await handleSend(value)
-                    }}
-                    disabled={isSending || !to?.length || !subject}
-                >
-                    Send
-                </Button>
+                <div className='flex items-center gap-2'>
+                    {
+                        !composeOpen && (
+                            <ComposeButton />
+                        )
+                    }
+                    <Button variant={"outline"}
+                        onClick={async () => {
+                            editor?.commands?.clearContent()
+                            await handleSend(value)
+                        }}
+                        disabled={isSending || !to?.length || !subject}
+                    >
+                        Send
+                    </Button>
+                </div>
             </div>
         </div>
     )
