@@ -1,24 +1,45 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer'
+import { Drawer, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer'
 import { Button } from '../ui/button'
 import { Pencil, X } from 'lucide-react'
 import ReplyEditor from './reply-editor'
 import useThreads from '~/hooks/useThreads'
-import { useLocalStorage } from 'usehooks-ts'
 import { api } from '~/trpc/react'
+import { toast } from 'sonner'
 
 export default function ComposeButton() {
-    const [open, setOpen] = useState(false)
-    const [accountId] = useLocalStorage('accountId', '')
+    const [open, setOpen] = useState<boolean>(false)
+    const [subject, setSubject] = useState<string>('')
     const [toValues, setToValues] = useState<{ label: string; value: string; }[]>([])
     const [ccValues, setCcValues] = useState<{ label: string; value: string; }[]>([])
-    const [subject, setSubject] = useState<string>('')
+    const { account } = useThreads()
 
+
+    const sendEmail = api.account.sendEmail.useMutation()
 
     const handleSend = async (value: string) => {
-        console.log(value)
+
+        if (!account) return
+
+        sendEmail.mutate({
+            accountId: account?.id ?? "",
+            from: { address: account.emailAddress, name: account.name },
+            body: value,
+            subject,
+            to: toValues.map(to => ({ name: to.value, address: to.value })),
+            cc: ccValues.map(cc => ({ name: cc.value, address: cc.value })),
+            replyTo: { name: account.name, address: account.emailAddress }
+
+        }, {
+            onSuccess: () => {
+                toast.success('Email sent')
+            },
+            onError: (error) => {
+                toast.error(error.message)
+            }
+        })
     }
 
     return (

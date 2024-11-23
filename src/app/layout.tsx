@@ -2,12 +2,14 @@ import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
+import { Toaster } from "sonner";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from "~/components/theme-provider";
 import { ThemeToggle } from "~/components/theme-toggle";
 import KBar from "~/components/kbar";
+import ComposeButton from "~/components/mail/compose-button";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -30,10 +32,12 @@ export default function RootLayout({
           >
             <TRPCReactProvider>
               <KBar>
-                <div className="fixed bottom-2 left-4 z-20">
+                <div className=" flex gap-3 fixed bottom-2 left-4 z-20">
                   <ThemeToggle />
+                  <ComposeButton />
                 </div>
                 {children}
+                <Toaster richColors position="bottom-right" />
               </KBar>
             </TRPCReactProvider>
           </ThemeProvider>

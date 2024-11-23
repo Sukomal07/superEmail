@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "../trpc";
 import { db } from "~/server/db";
 import { type Prisma } from "@prisma/client";
+import { emailAddressSchema } from "~/types/response";
+import { Account } from "~/lib/account";
 
 export const authoriseAccountAccess = async (accounId: string, userId: string) => {
     const account = await db.account.findFirst({
@@ -24,6 +26,21 @@ export const authoriseAccountAccess = async (accounId: string, userId: string) =
     return account
 }
 
+const inboxFilter = (accountId: string): Prisma.ThreadWhereInput => ({
+    accountId,
+    inboxStatus: true
+})
+
+const sentFilter = (accountId: string): Prisma.ThreadWhereInput => ({
+    accountId,
+    sentStatus: true
+})
+
+const draftFilter = (accountId: string): Prisma.ThreadWhereInput => ({
+    accountId,
+    draftStatus: true
+})
+
 export const accountRouter = createTRPCRouter({
     getAccounts: privateProcedure.query(async ({ ctx }) => {
         return await ctx.db.account.findMany({
@@ -44,21 +61,18 @@ export const accountRouter = createTRPCRouter({
     })).query(async ({ ctx, input }) => {
         const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
 
-        const filter: Prisma.ThreadWhereInput = {}
+        let filter: Prisma.ThreadWhereInput = {}
 
-        if (input.tab === 'inbox') {
-            filter.inboxStatus = true
-        } else if (input.tab === 'draft') {
-            filter.draftStatus = true;
-        } else if (input.tab === 'sent') {
-            filter.sentStatus = true
+        if (input.tab === "inbox") {
+            filter = inboxFilter(account.id)
+        } else if (input.tab === "sent") {
+            filter = sentFilter(account.id)
+        } else if (input.tab === "draft") {
+            filter = draftFilter(account.id)
         }
 
         return await ctx.db.thread.count({
-            where: {
-                accountId: account.id,
-                ...filter
-            }
+            where: filter
         })
     }),
 
@@ -67,16 +81,19 @@ export const accountRouter = createTRPCRouter({
         tab: z.string(),
         done: z.boolean()
     })).query(async ({ ctx, input }) => {
-        await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
 
-        const filter: Prisma.ThreadWhereInput = {}
+        const acc = new Account(account.accessToken)
 
-        if (input.tab === 'inbox') {
-            filter.inboxStatus = true
-        } else if (input.tab === 'draft') {
-            filter.draftStatus = true;
-        } else if (input.tab === 'sent') {
-            filter.sentStatus = true
+        acc.syncEmails({ accountId: account.id })
+
+        let filter: Prisma.ThreadWhereInput = {}
+        if (input.tab === "inbox") {
+            filter = inboxFilter(account.id)
+        } else if (input.tab === "sent") {
+            filter = sentFilter(account.id)
+        } else if (input.tab === "draft") {
+            filter = draftFilter(account.id)
         }
 
         filter.done = {
@@ -92,6 +109,7 @@ export const accountRouter = createTRPCRouter({
                     },
                     select: {
                         from: true,
+                        to: true,
                         body: true,
                         bodySnippet: true,
                         emailLabel: true,
@@ -157,7 +175,7 @@ export const accountRouter = createTRPCRouter({
             throw new Error("Thread not found")
         }
 
-        const lastExternalMessage = thread.emails.reverse().find(email => email.from.address !== account.emailAddress)
+        const lastExternalMessage = thread.emails.reverse().find(email => email.from.id !== account.id)
 
         if (!lastExternalMessage) {
             throw new Error("No external message found")
@@ -171,5 +189,34 @@ export const accountRouter = createTRPCRouter({
             id: lastExternalMessage.internetMessageId
 
         }
+    }),
+
+    sendEmail: privateProcedure.input(z.object({
+        accountId: z.string(),
+        body: z.string(),
+        subject: z.string(),
+        from: emailAddressSchema,
+        to: z.array(emailAddressSchema),
+        cc: z.array(emailAddressSchema).optional(),
+        bcc: z.array(emailAddressSchema).optional(),
+        replyTo: emailAddressSchema,
+        inReplyTo: z.string().optional(),
+        threadId: z.string().optional(),
+    })).mutation(async ({ ctx, input }) => {
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+
+        const acc = new Account(account.accessToken)
+
+        await acc.sendEmail({
+            from: input.from,
+            subject: input.subject,
+            body: input.body,
+            inReplyTo: input.inReplyTo,
+            to: input.to,
+            bcc: input.bcc,
+            cc: input.cc,
+            replyTo: input.replyTo,
+            threadId: input.threadId
+        })
     })
 })

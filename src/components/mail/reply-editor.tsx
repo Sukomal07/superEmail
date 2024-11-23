@@ -16,7 +16,6 @@ import { generate } from './action'
 import { readStreamableValue } from 'ai/rsc'
 import useThreads from '~/hooks/useThreads'
 import { turndown } from '~/lib/turndown'
-import ComposeButton from './compose-button'
 
 interface ReplyEditorProps {
     toValues: { label: string, value: string }[];
@@ -169,22 +168,16 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
                     </kbd>{" "}
                     for AI autocomplete
                 </span>
-                <div className='flex items-center gap-2'>
-                    {
-                        !composeOpen && (
-                            <ComposeButton />
-                        )
-                    }
-                    <Button variant={"outline"}
-                        onClick={async () => {
-                            editor?.commands?.clearContent()
-                            await handleSend(value)
-                        }}
-                        disabled={isSending || !to?.length || !subject}
-                    >
-                        Send
-                    </Button>
-                </div>
+
+                <Button variant={"outline"}
+                    onClick={async () => {
+                        editor?.commands?.clearContent()
+                        await handleSend(value)
+                    }}
+                    disabled={isSending || !to?.length || !subject}
+                >
+                    Send
+                </Button>
             </div>
         </div>
     )

@@ -159,7 +159,7 @@ export default function ThreadDisplay() {
                     <Separator />
                     <ResizablePanelGroup direction="vertical">
                         <ResizablePanel minSize={2} defaultSize={60} className='!overflow-y-scroll !overflow-x-hidden'>
-                            <div className='p-6'>
+                            <div className='p-6 flex flex-col gap-3'>
                                 {
                                     thread?.emails?.map((email) => (
                                         <DisplayEmail key={email.id} email={email} />

@@ -39,13 +39,13 @@ export default function EditorMenubar({ editor }: Props) {
     }, [editor])
     return (
         <div className="flex flex-wrap gap-2 px-2">
-            <Button
+            {/* <Button
                 onClick={addImage}
                 variant={"ghost"}
                 size={"icon"}
             >
                 <ImageIcon className="size-4 text-secondary-foreground" />
-            </Button>
+            </Button> */}
             <Button
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 disabled={!editor.can().chain().focus().toggleBold().run()}

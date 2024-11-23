@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import ReplyEditor from './reply-editor';
 import { api, type RouterOutputs } from '~/trpc/react';
 import useThreads from '~/hooks/useThreads';
+import { toast } from 'sonner';
 
 export default function ReplyBox() {
     const { accountId, threadId } = useThreads()
@@ -28,7 +29,7 @@ export default function ReplyBox() {
 
 function Editor({ replyDetails }: { replyDetails: RouterOutputs['account']['getReplyDetails'] }) {
 
-    const { threadId } = useThreads()
+    const { accountId, threadId } = useThreads()
     const [subject, setSubject] = useState(replyDetails.subject.startsWith("Re") ? replyDetails.subject : `Re: ${replyDetails.subject}`)
     const [toValues, setToValues] = useState<{ label: string, value: string }[]>(replyDetails.to.map(to => ({ label: to.address ?? to.name, value: to.address })) || [])
     const [ccValues, setCcValues] = useState<{ label: string, value: string }[]>(replyDetails.cc.map(cc => ({ label: cc.address ?? cc.name, value: cc.address })) || [])
@@ -44,9 +45,32 @@ function Editor({ replyDetails }: { replyDetails: RouterOutputs['account']['getR
         setCcValues(replyDetails.cc.map(cc => ({ label: cc.address ?? cc.name, value: cc.address })))
     }, [threadId, replyDetails])
 
+    const sendEmail = api.account.sendEmail.useMutation()
+
     const handleSend = async (value: string) => {
-        console.log(value)
+        if (!replyDetails) return
+
+        sendEmail.mutate({
+            accountId,
+            from: replyDetails.from,
+            body: value,
+            subject,
+            threadId: threadId ?? "",
+            to: replyDetails.to.map(to => ({ address: to.address, name: to.name ?? "" })),
+            cc: replyDetails.cc.map(cc => ({ address: cc.address, name: cc.name ?? "" })),
+            replyTo: replyDetails.from,
+            inReplyTo: replyDetails.id
+
+        }, {
+            onSuccess: () => {
+                toast.success('Email sent')
+            },
+            onError: (error) => {
+                toast.error(error.message)
+            }
+        })
     }
+
     return (
         <ReplyEditor
             subject={subject}
@@ -57,7 +81,7 @@ function Editor({ replyDetails }: { replyDetails: RouterOutputs['account']['getR
             onCcChange={setCcValues}
             to={replyDetails.to.map(to => to.address)}
             handleSend={handleSend}
-            isSending={false}
+            isSending={sendEmail.isPending}
         />
     )
 }
