@@ -10,6 +10,7 @@ import { ThemeProvider } from "~/components/theme-provider";
 import { ThemeToggle } from "~/components/theme-toggle";
 import KBar from "~/components/kbar";
 import ComposeButton from "~/components/mail/compose-button";
+import { auth } from "@clerk/nextjs/server";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -17,9 +18,11 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+
+  const { userId } = await auth()
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
@@ -34,7 +37,7 @@ export default function RootLayout({
               <KBar>
                 <div className=" flex gap-3 fixed bottom-2 left-4 z-20">
                   <ThemeToggle />
-                  <ComposeButton />
+                  {userId && <ComposeButton />}
                 </div>
                 {children}
                 <Toaster richColors position="bottom-right" />

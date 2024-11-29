@@ -1,7 +1,6 @@
 import { useLocalStorage } from 'usehooks-ts'
 import { api } from '~/trpc/react'
 import { atom, useAtom } from "jotai"
-import { useEffect } from 'react'
 
 export const threadIdAtom = atom<string | null>(null)
 
@@ -20,12 +19,6 @@ export default function useThreads() {
     }, {
         enabled: !!accountId && !!tab, placeholderData: e => e, refetchInterval: 2000
     })
-
-    useEffect(() => {
-        if (!threadId && threads) {
-            setThreadId(threads[0]?.id ?? "")
-        }
-    }, [threadId, threads, setThreadId])
 
     return {
         threads,

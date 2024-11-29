@@ -10,6 +10,8 @@ import AccountSwitcher from './account-switcher'
 import Sidebar from './sidebar'
 import ThreadList from './thread-list'
 import ThreadDisplay from './thread-display'
+import dynamic from 'next/dynamic'
+const SearchBar = dynamic(() => import('./search-bar'), { ssr: false })
 
 interface StyleProps {
     defaultLayout: number[] | undefined
@@ -66,7 +68,7 @@ export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, d
                             </TabsList>
                         </div>
                         <Separator />
-                        Search Bar
+                        <SearchBar />
                         <TabsContent value='inbox'>
                             <ThreadList />
                         </TabsContent>
