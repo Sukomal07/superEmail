@@ -218,5 +218,45 @@ export const accountRouter = createTRPCRouter({
             replyTo: input.replyTo,
             threadId: input.threadId
         })
+    }),
+
+    sendReply: privateProcedure.input(z.object({
+        accountId: z.string(),
+        messageId: z.string(),
+        body: z.string(),
+        subject: z.string(),
+        from: emailAddressSchema,
+        to: z.array(emailAddressSchema),
+        cc: z.array(emailAddressSchema).optional(),
+        bcc: z.array(emailAddressSchema).optional(),
+        replyTo: emailAddressSchema
+    })).mutation(async ({ ctx, input }) => {
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        const acc = new Account(account.accessToken)
+
+        await acc.replyEmail({
+            messageId: input.messageId,
+            from: input.from,
+            subject: input.subject,
+            body: input.body,
+            to: input.to,
+            cc: input.cc,
+            bcc: input.bcc,
+            replyTo: input.replyTo
+        })
+    }),
+
+    updateStatus: privateProcedure.input(z.object({
+        accountId: z.string(),
+        messageId: z.string(),
+        unread: z.boolean()
+    })).mutation(async ({ ctx, input }) => {
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        const acc = new Account(account.accessToken)
+
+        await acc.updateStatus({
+            messageId: input.messageId,
+            unread: input.unread
+        })
     })
 })

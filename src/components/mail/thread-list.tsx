@@ -7,9 +7,21 @@ import { Button } from '../ui/button'
 import { cn } from '~/lib/utils'
 import dompurify from "dompurify"
 import { Badge } from '../ui/badge'
+import { api } from '~/trpc/react'
 
 export default function ThreadList() {
-    const { threads, threadId, setThreadId } = useThreads()
+    const { threads, threadId, setThreadId, accountId } = useThreads()
+    const updateStatus = api.account.updateStatus.useMutation()
+
+    const handleUpdateStatus = async (messageId: string) => {
+        if (!messageId) return
+        setThreadId(messageId)
+        updateStatus.mutate({
+            accountId,
+            messageId,
+            unread: false
+        })
+    }
 
     const groupThreadsByDate = threads?.reduce((acc, thread) => {
 
@@ -41,12 +53,12 @@ export default function ThreadList() {
                                     key={thread.id}
                                     variant={`${thread.id === threadId ? "default" : "outline"}`}
                                     className={`h-full flex flex-col items-start gap-2 text-left`}
-                                    onClick={() => setThreadId(thread.id)}
+                                    onClick={() => handleUpdateStatus(thread.id)}
                                 >
                                     <div className='flex flex-col w-full gap-1'>
                                         <div className='flex items-center py-1'>
                                             <div className='flex items-center gap-2'>
-                                                <h1 className='font-semibold'>
+                                                <h1 className={`${thread.emails[0]?.sysLabels.includes('unread') ? 'font-bold' : 'font-medium'} text-wrap`}>
                                                     {thread.emails.at(-1)?.from.name ?? thread.emails.at(-1)?.from.address}
                                                 </h1>
                                             </div>
@@ -54,7 +66,7 @@ export default function ThreadList() {
                                                 {formatDistanceToNow(thread.emails.at(-1)?.sentAt ?? new Date(), { addSuffix: true })}
                                             </span>
                                         </div>
-                                        <h1 className='text-sm font-medium truncate'>{thread.subject}</h1>
+                                        <h1 className={`text-sm ${thread.emails[0]?.sysLabels.includes('unread') ? 'font-bold' : 'font-medium'} truncate`}>{thread.subject}</h1>
                                     </div>
                                     <p className='text-xs line-clamp-2 text-muted-foreground text-wrap'
                                         dangerouslySetInnerHTML={{

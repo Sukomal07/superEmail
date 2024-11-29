@@ -30,8 +30,8 @@ export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, d
                     defaultSize={defaultLayout[0]}
                     collapsedSize={navCollapsedSize}
                     collapsible={true}
-                    minSize={20}
-                    maxSize={30}
+                    minSize={12}
+                    maxSize={20}
                     onCollapse={() => {
                         setIsCollapsed(true)
                     }}

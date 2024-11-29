@@ -2,19 +2,35 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import useThreads from '~/hooks/useThreads'
 import { Button } from '../ui/button'
-import { Archive, ArchiveX, Clock, Forward, Mail, MessageSquareOff, MoreVertical, Reply, ReplyAll, Star, Tag, Trash } from 'lucide-react'
+import { Archive, ArchiveX, Forward, Mail, Reply, ReplyAll, Trash } from 'lucide-react'
 import { Separator } from '../ui/separator'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { format } from 'date-fns'
 import DisplayEmail from './display-email'
 import ReplyBox from './reply-box'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable'
+import { api } from '~/trpc/react'
 
 const UserButton = dynamic(() => import('@clerk/nextjs').then(mod => mod.UserButton), { ssr: false })
 
 export default function ThreadDisplay() {
-    const { threadId, threads } = useThreads()
+    const { threadId, threads, accountId, account } = useThreads()
+
+    const { data: replyDetails } = api.account.getReplyDetails.useQuery({
+        accountId,
+        threadId: threadId ?? ""
+    })
+
+    const updateStatus = api.account.updateStatus.useMutation()
+
+    const handleUpdateStatus = async () => {
+        if (!threadId) return
+        updateStatus.mutate({
+            accountId,
+            messageId: threadId,
+            unread: true
+        })
+    }
 
     const thread = threads?.find(th => th.id === threadId)
     return (
@@ -56,16 +72,22 @@ export default function ThreadDisplay() {
                         </TooltipTrigger>
                         <TooltipContent>Move to trash</TooltipContent>
                     </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant={"ghost"}
+                                size={"icon"}
+                                disabled={!thread}
+                                onClick={handleUpdateStatus}
+                            >
+                                <Mail className='size-4' />
+                                <span className="sr-only">Unread</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Unread</TooltipContent>
+                    </Tooltip>
                 </div>
-                <Separator orientation='vertical' className='mx-2 h-6' />
-                <Button
-                    variant={"ghost"}
-                    size={"icon"}
-                    disabled={!thread}
-                >
-                    <Clock className='size-4' />
-                </Button>
-                <div className='flex items-center ml-auto'>
+                <div className='flex items-center ml-auto gap-2'>
                     <div className='flex items-center gap-2'>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -95,38 +117,6 @@ export default function ThreadDisplay() {
                             <TooltipContent>Forward</TooltipContent>
                         </Tooltip>
                     </div>
-                    <Separator orientation='vertical' className='mx-2 h-6' />
-                    <DropdownMenu>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant={"ghost"}
-                                        size={"icon"}
-                                        disabled={!thread}
-                                    >
-                                        <MoreVertical className="size-4" />
-                                        <span className="sr-only">More</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent>More</TooltipContent>
-                        </Tooltip>
-                        <DropdownMenuContent align='end'>
-                            <DropdownMenuItem>
-                                <Mail /> Mark as unread
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Star /> Star thread
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Tag /> Add label
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <MessageSquareOff /> Mute thread
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                     <UserButton />
                 </div>
             </div>
@@ -141,11 +131,15 @@ export default function ThreadDisplay() {
                             <div className='text-xs text-wrap'>
                                 <span className='font-normal'>
                                     {
-                                        thread?.emails[0]?.from?.address && "Reply-to : "
+                                        replyDetails?.to.length && "Reply-to : "
                                     }
                                 </span>
                                 <span className='text-muted-foreground'>
-                                    {thread?.emails[0]?.from?.address}
+                                    {
+                                        replyDetails?.to
+                                            .filter(to => to.address !== account?.emailAddress)
+                                            .map(to => to.address)
+                                    }
                                 </span>
                             </div>
                         </div>

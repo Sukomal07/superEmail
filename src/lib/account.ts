@@ -174,13 +174,63 @@ export class Account {
                     Authorization: `Bearer ${this.token}`
                 }
             })
-
             return response.data
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error(error.message)
             } else {
                 console.error('Error during email send', error)
+            }
+        }
+    }
+
+    async replyEmail({ messageId, from, subject, body, to, cc, bcc, replyTo }: {
+        messageId: string, from: EmailAddress, subject: String, body: string, to: EmailAddress[], cc?: EmailAddress[], bcc?: EmailAddress[],
+        replyTo?: EmailAddress
+    }) {
+        try {
+            const response = await axios.post(`https://api.aurinko.io/v1/email/messages/${messageId}/reply`, {
+                from,
+                subject,
+                body,
+                to,
+                cc,
+                bcc,
+                replyTo: [replyTo]
+            }, {
+                params: {
+                    returnIds: true
+                },
+                headers: {
+                    Authorization: `Bearer ${this.token}`
+                }
+            })
+
+            return response.data
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error(error.message)
+            } else {
+                console.error('Error during reply message', error)
+            }
+        }
+    }
+
+    async updateStatus({ messageId, unread }: { messageId: string, unread: boolean }) {
+        try {
+            const response = await axios.post(`https://api.aurinko.io/v1/email/messages/${messageId}/status`, {
+                unread
+            }, {
+                headers: {
+                    Authorization: `Bearer ${this.token}`
+                }
+            })
+            return response.data
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error(error.message)
+            } else {
+                console.error('Error during reply message', error)
             }
         }
     }

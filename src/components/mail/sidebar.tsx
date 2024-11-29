@@ -15,15 +15,15 @@ export default function Sidebar({ isCollapsed }: Props) {
     const { data: inboxThread } = api.account.getNumThreads.useQuery({
         accountId,
         tab: 'inbox'
-    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 5000 })
+    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 1000 })
     const { data: draftThread } = api.account.getNumThreads.useQuery({
         accountId,
         tab: 'draft'
-    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 5000 })
+    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 1000 })
     const { data: sentThread } = api.account.getNumThreads.useQuery({
         accountId,
         tab: 'sent'
-    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 5000 })
+    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 1000 })
     return (
         <div>
             <Nav

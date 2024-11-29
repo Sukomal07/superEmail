@@ -17,11 +17,13 @@ export default function ComposeButton() {
     const { account } = useThreads()
 
 
+
     const sendEmail = api.account.sendEmail.useMutation()
 
     const handleSend = async (value: string) => {
 
         if (!account) return
+
 
         sendEmail.mutate({
             accountId: account?.id ?? "",

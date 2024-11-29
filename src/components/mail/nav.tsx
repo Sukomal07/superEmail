@@ -17,8 +17,7 @@ interface NavProps {
 }
 
 export default function Nav({ isCollapsed, links }: NavProps) {
-    const [tab, setTab] = useLocalStorage("tab", "inbox")
-
+    const [tab, setTab] = useLocalStorage('tab', 'inbox')
     return (
         <div
             data-collapsed={isCollapsed}
