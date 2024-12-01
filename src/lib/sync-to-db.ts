@@ -3,6 +3,7 @@ import pLimit from "p-limit"
 import { db } from "~/server/db";
 import { Prisma } from "@prisma/client";
 import { OramaClient } from "./orama";
+import { turndown } from "./turndown";
 
 async function upsertEmailAddress(address: EmailAddress, accountId: string) {
     try {
@@ -279,11 +280,12 @@ export async function syncEmailsToDatabase(emails: EmailMessage[], accountId: st
             limit(async () => {
                 await upsertEmail(email, accountId, index);
 
+                const body = turndown.turndown(email.body ?? email.bodySnippet ?? "")
                 // Insert email into Orama index
                 await orama.insert({
                     subject: email.subject,
-                    body: email.body,
-                    rawBody: email.bodySnippet,
+                    body: body,
+                    rawBody: email.bodySnippet ?? "",
                     from: email.from.address,
                     to: email.to.map(to => to.address),
                     sentAt: email.sentAt.toLocaleString(),

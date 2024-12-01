@@ -3,7 +3,8 @@ import { persist, restore } from "@orama/plugin-data-persistence"
 import { db } from "~/server/db"
 
 export class OramaClient {
-    private orama?: AnyOrama
+    // @ts-ignore
+    private orama: AnyOrama
     private accountId: string
 
     constructor(accountId: string) {
@@ -11,7 +12,7 @@ export class OramaClient {
     }
 
     async saveIndex() {
-        const index = await persist(this.orama!, 'json')
+        const index = await persist(this.orama, 'json')
 
         await db.account.update({
             where: {
@@ -54,13 +55,13 @@ export class OramaClient {
     }
 
     async search({ term }: { term: string }) {
-        return await search(this.orama!, {
+        return await search(this.orama, {
             term
         })
     }
 
     async insert(document: any) {
-        await insert(this.orama!, document)
+        await insert(this.orama, document)
         await this.saveIndex()
     }
 }

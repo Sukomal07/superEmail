@@ -20,7 +20,7 @@ export default function SearchBar() {
         setIsSearching(false)
     }
     return (
-        <div className='m-4 px-2 flex items-center border border-input rounded-md'>
+        <div className='mx-4 my-2 px-2 flex items-center border border-input rounded-md'>
             <Search className='size-4 text-muted-foreground' />
             <Input
                 placeholder='Search...'
