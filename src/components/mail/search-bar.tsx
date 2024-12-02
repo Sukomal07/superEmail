@@ -20,18 +20,18 @@ export default function SearchBar() {
         setIsSearching(false)
     }
     return (
-        <div className='mx-4 my-2 px-2 flex items-center border border-input rounded-md'>
-            <Search className='size-4 text-muted-foreground' />
+        <div className='mx-4 my-2 relative'>
+            <Search className='size-4 absolute left-2 top-2.5 text-muted-foreground' />
             <Input
                 placeholder='Search...'
-                className='focus:ring-0 focus-visible:ring-0 border-none outline-none shadow-none text-lg'
+                className='pl-8 pr-14 text-base'
                 type='text'
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 onFocus={() => setIsSearching(true)}
                 onBlur={() => handleBlur()}
             />
-            <div className='flex items-center gap-2'>
+            <div className='absolute right-2 top-2.5 flex items-center gap-2'>
                 {
                     isFetching && <Loader2 className='size-4 animate-spin text-gray-400' />
                 }
@@ -43,7 +43,7 @@ export default function SearchBar() {
                             setIsSearching(false)
                             setSearchValue('')
                         }}
-                        className='hover:bg-transparent h-5 w-5'
+                        className='hover:bg-transparent h-4 w-4'
                     >
                         <X className='text-gray-400' />
                     </Button>

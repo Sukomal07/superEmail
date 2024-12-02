@@ -5,6 +5,8 @@ import { type Prisma } from "@prisma/client";
 import { emailAddressSchema } from "~/types/response";
 import { Account } from "~/lib/account";
 import { OramaClient } from "~/lib/orama";
+import { turndown } from "~/lib/turndown";
+import { getEmbeddings } from "~/lib/embedding";
 
 export const authoriseAccountAccess = async (accounId: string, userId: string) => {
     const account = await db.account.findFirst({
@@ -101,7 +103,10 @@ export const accountRouter = createTRPCRouter({
             equals: input.done
         }
 
-        return await ctx.db.thread.findMany({
+        const orama = new OramaClient(account.id);
+        await orama.initialize();
+
+        const threads = await ctx.db.thread.findMany({
             where: filter,
             include: {
                 emails: {
@@ -125,7 +130,36 @@ export const accountRouter = createTRPCRouter({
             orderBy: {
                 lastMessageDate: 'desc'
             }
-        })
+        });
+
+        for (const thread of threads) {
+            for (const email of thread.emails) {
+                // Check if the email is already indexed by threadId
+                const searchResult = await orama.search({ term: email.id });
+                const isIndexed = searchResult.hits.some(hit => hit.document.threadId === email.id);
+
+                const body = turndown.turndown(email.body ?? email.bodySnippet ?? "");
+
+                const payload = `From: ${email.from.name} <${email.from.address}>\nTo: ${email.to.map(t => `${t.name} <${t.address}>`).join(', ')}\nSubject: ${email.subject}\nBody: ${body}\n SentAt: ${new Date(email.sentAt).toLocaleString()}`
+
+                const bodyEmbedding = await getEmbeddings(payload);
+
+                if (!isIndexed) {
+                    await orama.insert({
+                        subject: email.subject,
+                        body: body,
+                        rawBody: email.bodySnippet ?? "",
+                        from: `${email.from.name} <${email.from.address}>`,
+                        to: email.to.map(to => `${to.name} <${to.address}>`),
+                        sentAt: new Date(email.sentAt).toLocaleString(),
+                        threadId: email.id,
+                        embeddings: bodyEmbedding
+                    });
+                }
+            }
+        }
+
+        return threads;
     }),
 
     getSuggestions: privateProcedure.input(z.object({

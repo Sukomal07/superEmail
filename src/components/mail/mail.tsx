@@ -11,6 +11,7 @@ import Sidebar from './sidebar'
 import ThreadList from './thread-list'
 import ThreadDisplay from './thread-display'
 import dynamic from 'next/dynamic'
+import AskAI from './ask-ai'
 const SearchBar = dynamic(() => import('./search-bar'), { ssr: false })
 
 interface StyleProps {
@@ -50,7 +51,7 @@ export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, d
                         <Sidebar isCollapsed={isCollapsed} />
                         <div className='flex-1'>
                         </div>
-                        Ask AI
+                        <AskAI isCollapsed={isCollapsed} />
                     </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle />

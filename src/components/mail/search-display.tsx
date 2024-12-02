@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai'
 import React, { useEffect } from 'react'
-import { searchValueAtom } from './search-bar'
+import { isSearchingAtom, searchValueAtom } from './search-bar'
 import { api } from '~/trpc/react'
 import { useDebounceValue } from 'usehooks-ts'
 import useThreads from '~/hooks/useThreads'
@@ -9,9 +9,16 @@ import DOMPurify from "dompurify"
 
 export default function SearchDisplay() {
     const [searchValue] = useAtom(searchValueAtom)
-    const { accountId } = useThreads()
+    const [isSearching, setIsSearching] = useAtom(isSearchingAtom)
+    const { accountId, setThreadId } = useThreads()
     const search = api.account.searchEmails.useMutation()
     const [debouncedSearchValue] = useDebounceValue(searchValue, 500);
+
+    const handleClick = async (threadId: string) => {
+        if (!threadId) return
+        setIsSearching(false)
+        setThreadId(threadId)
+    }
 
     useEffect(() => {
         if (!debouncedSearchValue || !accountId) return
@@ -38,7 +45,7 @@ export default function SearchDisplay() {
                 ) : (
                     <ul className="flex flex-col gap-2">
                         {search.data?.hits.map((hit) => (
-                            <li key={hit.id} className="border rounded-md p-4 hover:bg-gray-100 cursor-pointer transition-all dark:hover:bg-gray-900 text-wrap">
+                            <li onClick={() => handleClick(hit.document.threadId)} key={hit.id} className="border rounded-md p-4 hover:bg-gray-100 cursor-pointer transition-all dark:hover:bg-gray-900 text-wrap">
                                 <h3 className="text-base font-medium">{hit.document.subject}</h3>
                                 <p className="text-sm text-gray-500">
                                     From: {hit.document.from}
