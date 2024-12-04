@@ -174,7 +174,7 @@ export default function ReplyEditor({ toValues, ccValues, subject, setSubject, t
                         editor?.commands?.clearContent()
                         await handleSend(value)
                     }}
-                    disabled={isSending || !to?.length || !subject}
+                    disabled={isSending || !to?.length || !subject || editor.isEmpty}
                 >
                     Send
                 </Button>

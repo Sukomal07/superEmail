@@ -48,51 +48,55 @@ export default function ThreadList() {
                             <span className='text-xs font-semibold text-muted-foreground mt-5 first:mt-0'>
                                 {date}
                             </span>
-                            {threads.map((thread) => (
-                                <Button
-                                    key={thread.id}
-                                    variant={`${thread.id === threadId ? "default" : "outline"}`}
-                                    className={`h-full flex flex-col items-start gap-2 text-left`}
-                                    onClick={() => handleUpdateStatus(thread.id)}
-                                >
-                                    <div className='flex flex-col w-full gap-1'>
-                                        <div className='flex items-center py-1'>
-                                            <div className='flex items-center gap-2'>
-                                                <h1 className={`${thread.emails[0]?.sysLabels.includes('unread') ? 'font-bold' : 'font-medium'} text-wrap`}>
-                                                    {thread.emails.at(-1)?.from.name ?? thread.emails.at(-1)?.from.address}
-                                                </h1>
+                            {
+                                threads
+                                    .filter(thread => !thread.emails[0]?.sysLabels?.includes('trash'))
+                                    .map((thread) => (
+                                        <Button
+                                            key={thread.id}
+                                            variant={`${thread.id === threadId ? "default" : "outline"}`}
+                                            className={`h-full flex flex-col items-start gap-2 text-left`}
+                                            onClick={() => handleUpdateStatus(thread.id)}
+                                        >
+                                            <div className='flex flex-col w-full gap-1'>
+                                                <div className='flex items-center py-1'>
+                                                    <div className='flex items-center gap-2'>
+                                                        <h1 className={`${thread.emails[0]?.sysLabels.includes('unread') ? 'font-bold' : 'font-medium'} text-wrap`}>
+                                                            {thread.emails.at(-1)?.from.name ?? thread.emails.at(-1)?.from.address}
+                                                        </h1>
+                                                    </div>
+                                                    <span className={cn("ml-auto text-xs")}>
+                                                        {formatDistanceToNow(thread.emails.at(-1)?.sentAt ?? new Date(), { addSuffix: true })}
+                                                    </span>
+                                                </div>
+                                                <h1 className={`text-sm ${thread.emails[0]?.sysLabels.includes('unread') ? 'font-bold' : 'font-medium'} truncate`}>{thread.subject}</h1>
                                             </div>
-                                            <span className={cn("ml-auto text-xs")}>
-                                                {formatDistanceToNow(thread.emails.at(-1)?.sentAt ?? new Date(), { addSuffix: true })}
-                                            </span>
-                                        </div>
-                                        <h1 className={`text-sm ${thread.emails[0]?.sysLabels.includes('unread') ? 'font-bold' : 'font-medium'} truncate`}>{thread.subject}</h1>
-                                    </div>
-                                    <p className='text-xs line-clamp-2 text-muted-foreground text-wrap'
-                                        dangerouslySetInnerHTML={{
-                                            __html: dompurify.sanitize(thread.emails.at(-1)?.bodySnippet ?? "",
-                                                {
-                                                    USE_PROFILES: { html: true }
-                                                })
-                                        }}
-                                    >
+                                            <p className='text-xs line-clamp-2 text-muted-foreground text-wrap'
+                                                dangerouslySetInnerHTML={{
+                                                    __html: dompurify.sanitize(thread.emails.at(-1)?.bodySnippet ?? "",
+                                                        {
+                                                            USE_PROFILES: { html: true }
+                                                        })
+                                                }}
+                                            >
 
-                                    </p>
-                                    {thread.emails[0]?.sysLabels.length && (
-                                        <div className='flex items-center gap-2'>
-                                            {thread.emails[0].sysLabels.map((label) => (
-                                                <Badge
-                                                    key={label}
-                                                    variant={getBadgeVariantFromLabel(label)}
-                                                    className='capitalize'
-                                                >
-                                                    {label}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    )}
-                                </Button>
-                            ))}
+                                            </p>
+                                            {thread.emails[0]?.sysLabels.length && (
+                                                <div className='flex items-center gap-2'>
+                                                    {thread.emails[0].sysLabels.map((label) => (
+                                                        <Badge
+                                                            key={label}
+                                                            variant={getBadgeVariantFromLabel(label)}
+                                                            className='capitalize'
+                                                        >
+                                                            {label}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </Button>
+                                    ))
+                            }
                         </React.Fragment>
                     })}
                 </div>

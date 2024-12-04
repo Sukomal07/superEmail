@@ -6,8 +6,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import useThreads from '~/hooks/useThreads';
 import { toast } from 'sonner';
 import { cn } from '~/lib/utils';
-import { ArrowUp, Send, SparklesIcon } from 'lucide-react';
-import { Input } from '../ui/input';
+import { ArrowUp, SparklesIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
@@ -47,7 +46,7 @@ export default function AskAI({ isCollapsed }: { isCollapsed: boolean }) {
             {/* <PremiumBanner /> */}
             {/* <div className="h-4"></div> */}
             <motion.div className="flex flex-col items-end justify-end border p-4 rounded-lg bg-gray-100 shadow-inner dark:bg-gray-900">
-                <div className="max-h-[50vh] overflow-y-scroll w-full flex flex-col gap-2" id='message-container'>
+                <div className="max-h-56 overflow-y-scroll w-full flex flex-col gap-2" id='message-container'>
                     <AnimatePresence mode="wait">
                         {messages.map((message) => (
                             <motion.div
@@ -119,13 +118,13 @@ export default function AskAI({ isCollapsed }: { isCollapsed: boolean }) {
                             value={input}
                             placeholder="Ask AI anything about your emails"
                             className="resize-none"
-                            rows={4}
+                            rows={3}
                         />
                         <Button
                             type="submit"
                             variant="ghost"
                             size="icon"
-                            className="rounded-full absolute right-1 top-14"
+                            className="rounded-lg absolute right-1 top-10"
                             disabled={!input}
                         >
                             <ArrowUp />

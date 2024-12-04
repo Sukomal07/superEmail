@@ -161,7 +161,7 @@ export default function ThreadDisplay() {
                                 </div>
                                 <Separator />
                                 <ResizablePanelGroup direction="vertical">
-                                    <ResizablePanel minSize={2} defaultSize={60} className='!overflow-y-scroll !overflow-x-hidden'>
+                                    <ResizablePanel minSize={2} defaultSize={90} className='!overflow-y-scroll !overflow-x-hidden'>
                                         <div className='px-6 py-4 flex flex-col gap-3'>
                                             {
                                                 thread?.emails?.map((email) => (
@@ -171,7 +171,7 @@ export default function ThreadDisplay() {
                                         </div>
                                     </ResizablePanel>
                                     <ResizableHandle withHandle />
-                                    <ResizablePanel minSize={10} defaultSize={40}>
+                                    <ResizablePanel minSize={10} defaultSize={10}>
                                         <ReplyBox />
                                     </ResizablePanel>
                                 </ResizablePanelGroup>

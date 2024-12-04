@@ -46,7 +46,10 @@ export default function SearchDisplay() {
                     <ul className="flex flex-col gap-2">
                         {search.data?.hits.map((hit) => (
                             <li onClick={() => handleClick(hit.document.threadId)} key={hit.id} className="border rounded-md p-4 hover:bg-gray-100 cursor-pointer transition-all dark:hover:bg-gray-900 text-wrap">
-                                <h3 className="text-base font-medium">{hit.document.subject}</h3>
+                                <div className='flex justify-between items-start'>
+                                    <h3 className="text-base font-medium text-wrap">{hit.document.subject}</h3>
+                                    <span className='text-xs text-muted-foreground'>{hit.document.sentAt}</span>
+                                </div>
                                 <p className="text-sm text-gray-500">
                                     From: {hit.document.from}
                                 </p>

@@ -17,7 +17,7 @@ export default function useThreads() {
         tab,
         done
     }, {
-        enabled: !!accountId && !!tab, placeholderData: e => e, refetchInterval: 2000
+        enabled: !!accountId && !!tab, placeholderData: e => e, refetchInterval: 5000
     })
 
     return {

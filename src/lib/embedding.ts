@@ -1,10 +1,4 @@
-import { OpenAIApi, Configuration } from "openai-edge"
-
-const config = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY
-})
-
-const openai = new OpenAIApi(config)
+import { openai, type ResponseTypes } from "./openai"
 
 export async function getEmbeddings(text: string) {
     try {
@@ -13,9 +7,9 @@ export async function getEmbeddings(text: string) {
             input: text.replace(/\n/g, " ")
         })
 
-        const result = await response.json()
+        const result = (await response.json()) as ResponseTypes["createEmbedding"]
 
-        return result.data[0].embedding as number[]
+        return result.data[0]?.embedding
     } catch (error) {
         console.log("error calling openai embeddings api", error)
         throw error
