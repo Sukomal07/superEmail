@@ -1,29 +1,176 @@
-# Create T3 App
+# SuperEmail
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+SuperEmail is an innovative platform designed to revolutionize how you manage your emails. With advanced features powered by AI, SuperEmail simplifies email communication, helping you save time and stay organized.
 
-## What's next? How do I make an app with this?
+---
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Key Features
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+### ✉️ **Email Management Made Easy**
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- Send and receive emails effortlessly.
+- Organize your inbox for better productivity.
 
-## Learn More
+### 🤖 **AI-Powered Assistance**
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- **Write Emails:** Use AI to craft professional, personalized, or creative emails quickly.
+- **Quick Answers:** Ask questions like "When is my next flight?" and let AI find the answers directly from your emails.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### 🔍 **Intelligent Search**
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- Search your inbox smarter and faster with AI-driven insights.
 
-## How do I deploy this?
+### 💬 **Integrated Chat**
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- Use the built-in chat feature to collaborate or communicate seamlessly.
+
+---
+
+## Why SuperEmail?
+
+1. **AI-Powered Productivity:** Automate repetitive tasks and focus on what matters.
+2. **Streamlined Communication:** Access emails and chat in one platform.
+3. **Quick Insights:** Let AI help you retrieve critical information from your inbox instantly.
+4. **User-Friendly Interface:** Intuitive design tailored for efficiency.
+
+## How It Works
+
+1. **Email Sync:** Connect your Gmail account and other supported email platforms securely.
+2. **AI Integration:** Leverage OpenAI-powered capabilities to write, search, and analyze emails.
+3. **Collaborative Environment:** Use the chat feature to stay connected with your team.
+
+---
+
+# Project Setup and Installation Guide
+
+Welcome to the project! Follow the steps below to get the application up and running.
+
+---
+
+## Prerequisites
+
+1. **Node.js** and **npm** installed.
+2. **Docker** installed and running.
+3. Access to services: [Ngrok](https://ngrok.com/), [Clerk](https://clerk.dev/), [Aurinko.io](https://aurinko.io/), [Google Cloud Console](https://console.cloud.google.com/), and [OpenAI](https://openai.com/).
+
+---
+
+## Setup Steps
+
+### 1. Clone the Repository and Install Packages
+
+```bash
+git clone https://github.com/Sukomal07/superEmail.git
+cd superEmail
+npm install
+```
+
+### 2. Configure Environment Variables
+
+- Copy the `.env.example` file and create a `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+### 3. Start the Database
+
+- Run the PostgreSQL database using Docker:
+
+```bash
+./start-database.sh
+```
+
+### 4. Push Database Changes
+
+- Push the database schema using:
+
+```bash
+npm run db:push
+```
+
+### 5. Setup Ngrok Tunneling
+
+- Open a tunnel for port 3000 using Ngrok:
+
+```bash
+ngrok http 3000
+```
+
+- Note the `ngrok` URL for later use.
+
+### 6. Set Up Clerk Webhooks
+
+- Create a [Clerk](https://clerk.dev/) account.
+- Configure webhooks:
+  - Navigate to the **Webhook** section in Clerk.
+  - Use the `ngrok` URL with `/api/clerk/webhook` (e.g., `https://<ngrok-id>.ngrok.io/api/clerk/webhook`).
+  - Choose `user.created` and `session.created` events and save.
+
+### 7. Add Clerk Keys to `.env`
+
+- Copy the following Clerk keys to the `.env` file:
+
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+```
+
+### 8. Configure Aurinko.io
+
+- Create an [Aurinko.io](https://aurinko.io/) account and a new application.
+- Copy the following keys to the `.env` file:
+
+```
+AURINKO_CLIENT_ID=
+AURINKO_CLIENT_SECRET=
+AURINKO_SIGNING_SECRET=
+```
+
+### 9. Setup Google Cloud Project
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project.
+3. Enable the **Gmail API**:
+   - Go to **APIs & Services > Enable APIs and Services**.
+   - Enable the **Gmail API**.
+4. Configure OAuth Consent Screen:
+   - Under **Scopes**, choose all Gmail scopes.
+   - Add the following to **Authorized Redirect URIs**:
+     ```
+     https://api.aurinko.io/v1/auth/callback
+     ```
+   - Save the changes.
+
+### 10. Configure Aurinko with Google OAuth
+
+- Go to Aurinko settings:
+  - In **Callback URL**, add:
+    ```
+    http://localhost:3000/api/aurinko/callback
+    ```
+  - Add the **Client ID** and **Client Secret** in `Google OAuth` copy from your Google Cloud project.
+
+### 11. Add OpenAI API Key
+
+- Obtain an API key from [OpenAI](https://platform.openai.com/).
+- Add it to the `.env` file:
+
+```
+OPENAI_API_KEY=
+```
+
+### 12. Start the Project
+
+- Run the development server:
+
+```bash
+npm run dev
+```
+
+---
+
+## Good Luck!
+
+If you encounter any issues, feel free to consult the documentation or reach out for support. Happy coding! 🚀
+Your contributions are highly appreciated! Together, we can make this project better. 🎉
