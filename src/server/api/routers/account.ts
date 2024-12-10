@@ -72,6 +72,17 @@ export const accountRouter = createTRPCRouter({
             filter = draftFilter(account.id)
         }
 
+        filter = {
+            ...filter,
+            emails: {
+                none: {
+                    sysLabels: {
+                        hasSome: ['trash', 'junk']
+                    }
+                }
+            }
+        }
+
         return await ctx.db.thread.count({
             where: filter
         })
@@ -80,34 +91,31 @@ export const accountRouter = createTRPCRouter({
     getThreads: privateProcedure.input(z.object({
         accountId: z.string(),
         tab: z.string(),
-        done: z.boolean()
+        done: z.boolean(),
+        skip: z.number(),
+        take: z.number(),
     })).query(async ({ ctx, input }) => {
-        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId);
 
-        const acc = new Account(account.accessToken)
+        const acc = new Account(account.accessToken);
+        acc.syncEmails({ accountId: account.id });
 
-        acc.syncEmails({ accountId: account.id })
-
-        let filter: Prisma.ThreadWhereInput = {}
+        let filter: Prisma.ThreadWhereInput = {};
         if (input.tab === "inbox") {
-            filter = inboxFilter(account.id)
+            filter = inboxFilter(account.id);
         } else if (input.tab === "sent") {
-            filter = sentFilter(account.id)
+            filter = sentFilter(account.id);
         } else if (input.tab === "draft") {
-            filter = draftFilter(account.id)
+            filter = draftFilter(account.id);
         }
 
-        filter.done = {
-            equals: input.done
-        }
+        filter.done = { equals: input.done };
 
         const threads = await ctx.db.thread.findMany({
             where: filter,
             include: {
                 emails: {
-                    orderBy: {
-                        sentAt: 'asc'
-                    },
+                    orderBy: { sentAt: 'asc' },
                     select: {
                         from: true,
                         to: true,
@@ -121,10 +129,9 @@ export const accountRouter = createTRPCRouter({
                     }
                 }
             },
-            take: 15,
-            orderBy: {
-                lastMessageDate: 'desc'
-            }
+            skip: input.skip,
+            take: input.take,
+            orderBy: { lastMessageDate: 'desc' }
         });
 
         return threads;

@@ -12,6 +12,11 @@ import ThreadList from './thread-list'
 import ThreadDisplay from './thread-display'
 import dynamic from 'next/dynamic'
 import AskAI from './ask-ai'
+import { api } from '~/trpc/react'
+import useThreads from '~/hooks/useThreads'
+import { useLocalStorage } from 'usehooks-ts'
+import { Button } from '../ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 const SearchBar = dynamic(() => import('./search-bar'), { ssr: false })
 
 interface StyleProps {
@@ -23,6 +28,50 @@ interface StyleProps {
 export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, defaultCollapsed }: StyleProps) {
 
     const [isCollapsed, setIsCollapsed] = useState<boolean>(defaultCollapsed);
+    const [tab] = useLocalStorage<'inbox' | 'draft' | 'sent'>('tab', 'inbox');
+
+    const { accountId, skip, setSkip, isFetching } = useThreads();
+
+    const { data: inboxThread } = api.account.getNumThreads.useQuery({
+        accountId,
+        tab: 'inbox'
+    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 3000 })
+
+    const { data: draftThread } = api.account.getNumThreads.useQuery({
+        accountId,
+        tab: 'draft'
+    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 3000 })
+
+    const { data: sentThread } = api.account.getNumThreads.useQuery({
+        accountId,
+        tab: 'sent'
+    }, { enabled: !!accountId, placeholderData: e => e, refetchInterval: 3000 })
+
+    const totalThreads = {
+        inbox: inboxThread ?? 0,
+        draft: draftThread ?? 0,
+        sent: sentThread ?? 0
+    };
+
+    const getTotalCount = () => totalThreads[tab];
+
+    const handlePrevPage = () => {
+        if (skip > 0) {
+            setSkip(skip - 50);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (skip + 50 < getTotalCount()) {
+            setSkip(skip + 50);
+        }
+    };
+
+    const isFirstPage = skip === 0;
+    const isLastPage = skip + 50 >= getTotalCount();
+    const startRange = skip + 1;
+    const endRange = Math.min(skip + 50, getTotalCount());
+
     return (
         <TooltipProvider delayDuration={0}>
             <ResizablePanelGroup
@@ -48,7 +97,12 @@ export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, d
                             <AccountSwitcher isCollapsed={isCollapsed} />
                         </div>
                         <Separator />
-                        <Sidebar isCollapsed={isCollapsed} />
+                        <Sidebar
+                            isCollapsed={isCollapsed}
+                            inboxThread={inboxThread?.toString() ?? '0'}
+                            draftThread={draftThread?.toString() ?? '0'}
+                            sentThread={sentThread?.toString() ?? '0'}
+                        />
                         <div className='flex-1'>
                         </div>
                         <AskAI isCollapsed={isCollapsed} />
@@ -70,6 +124,31 @@ export default function Mail({ defaultLayout = [20, 32, 48], navCollapsedSize, d
                         </div>
                         <Separator />
                         <SearchBar />
+                        <div className='px-4 flex items-center gap-2 justify-end'>
+                            <span className="text-xs text-muted-foreground">
+                                {startRange} - {endRange} of {getTotalCount()}
+                            </span>
+                            <div className='flex gap-4 items-center'>
+                                <Button
+                                    variant={"ghost"}
+                                    size={"icon"}
+                                    className='rounded-full'
+                                    onClick={handlePrevPage}
+                                    disabled={isFirstPage || isFetching}
+                                >
+                                    <ChevronLeft className='text-muted-foreground' />
+                                </Button>
+                                <Button
+                                    variant={"ghost"}
+                                    size={"icon"}
+                                    className='rounded-full'
+                                    onClick={handleNextPage}
+                                    disabled={isLastPage || isFetching}
+                                >
+                                    <ChevronRight className='text-muted-foreground' />
+                                </Button>
+                            </div>
+                        </div>
                         <TabsContent value='inbox'>
                             <ThreadList />
                         </TabsContent>

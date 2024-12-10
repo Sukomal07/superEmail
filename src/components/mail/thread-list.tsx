@@ -36,7 +36,7 @@ export default function ThreadList() {
         return acc
     }, {} as Record<string, typeof threads>)
     return (
-        <div className='max-w-full overflow-x-hidden overflow-y-scroll max-h-[calc(100vh-120px)]'>
+        <div className='max-w-full overflow-x-hidden overflow-y-scroll max-h-[calc(100vh-200px)]'>
             {!threads || threads.length === 0 ? (
                 <div className='flex justify-center items-center h-full text-muted-foreground'>
                     <span>No threads found</span>
@@ -50,7 +50,9 @@ export default function ThreadList() {
                             </span>
                             {
                                 threads
-                                    .filter(thread => !thread.emails[0]?.sysLabels?.includes('trash'))
+                                    .filter(thread => !thread.emails.some(email =>
+                                        email.sysLabels?.includes('trash') || email.sysLabels?.includes('junk')
+                                    ))
                                     .map((thread) => (
                                         <Button
                                             key={thread.id}
